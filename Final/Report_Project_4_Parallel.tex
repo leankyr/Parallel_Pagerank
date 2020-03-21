@@ -1,0 +1,195 @@
+\documentclass[a4paper,11pt]{article}
+%\usepackage{morefloats}
+\usepackage{cmap} % fix search and cut-and-paste in Acrobat Reader
+\usepackage[LGR,T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textalpha}
+\usepackage{alphabeta}
+\usepackage{textcomp}
+\usepackage[colorlinks]{hyperref}
+\usepackage{bookmark}
+% \usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{verbatim}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{pgfplots}
+\usepackage{fontspec}
+\usepackage{mathtools}
+\usepackage{wrapfig}
+\usepackage{tikz}
+\usepackage{pgf}
+\usepackage{empheq}
+\usetikzlibrary{arrows}
+\usepackage{tikzscale}
+\usepackage{slashbox}
+%\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{hhline}
+\usepackage{float}
+\usepackage{slashbox,pict2e}
+\setmainfont{Times New Roman}
+%	\pgfplotsset{compat=newest}
+\graphicspath{images/}
+% \usepackage{kerkis}
+% \usepackage{gfsdidot}
+
+% Greek utf8 definitions work with and without "Babel", 
+% with monotonic, polytonic, and ancient Greek variants.
+% However, this document uses babel language switches, so it requires Babel:
+\usepackage[greek,english]{babel}
+% \languageattribute{greek}{polutoniko}
+\languageattribute{greek}{ancient}
+
+
+
+
+%Margins
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  total={170mm,257mm},
+  left=20mm,
+  top=20mm,
+}
+
+
+
+
+\title{Παράλληλα και Διανεμημένα Συστήματα\\ Εργασία - 4 Pagerank}
+\author{Κυριαζής Γεώργιος - Λέανδρος{  } gkyriazt@ece.auth.gr {  }7711 }
+
+
+
+\begin{document}
+
+\maketitle
+\author
+
+\newpage
+ 
+\section{Συμπεριλαμβανόμενα αρχεία}
+
+Link:  \href{https://www.dropbox.com/sh/x4mlebqv9qc8dsr/AACq4gBlrVEveQDKzLZhwfY-a?dl=0}{Dropbox}
+
+φάκελος \textbf{Final} με όλα τα αρχεία κώδικα ήτοι:
+\begin{itemize}
+	\item folder Implementation\_Ver1
+	\item folder Implementation\_Ver2
+	\item Report\_Project\_4\_Parallel.pdf
+	\item Report\_Project\_4\_Parallel.tex
+\end{itemize}
+ 
+ O φάκελος Implementaion 1 περιέχει υλοποίηση του Pagerank με αποθήκευση δεδομένων διατηρώντας τον Α τετράγωνο και κρατώντας όλα τα μηδενικά σπαταλώντας μνήμη. Αντίθετα στην υλοποίηση 2 τα δεδομένα αποθηκεύονται συμπιεσμένα εξοικονομώντας μνήμη έτσι δίνεται η δυνατότητα διαχείρισης πιο πολλών δεδομένων. Στο κάθε φάκελο υπάρχουν τα αποτελέσματα μετρήσεων καθώς και οι αντίστοιχοι κώδικες. Τέλος θα γίνει μια προσπάθεια σύγκρισης της μεθόδου Gauss-Siedel με την Power Method η οποία είναι εξίσου δημοφιλής. 
+ 
+\section{Implementation\_1}
+ 	Σαν οδηγό στην υλοποίηση αλλά και σαν έλεγχο ορθότητας χρησιμοποιώ αυτό το \href{https://www.ece.ucsb.edu/~hespanha/published/2018ACC_0753_MS.pdf}{Paper} . Αυτό το paper λοιπόν παρουσιάζει ένα δίκτυο 4 κόμβων και σαν τελικό Pagerank δίνει το παρακάτω διάνυσμα. 
+ \begin{equation}	
+P_p = \begin{bmatrix}
+0.1194 & 0.3314 & 0.2602 & 0.2890  
+\end{bmatrix}	
+\end{equation}
+
+ενώ ο δικός μου αλγόριθμος δίνει σαν έξοδο το παρακάτω διάνυσμα 
+
+\begin{equation}	
+P_{mine} = \begin{bmatrix}
+0.12005499 & 0.33244571 & 0.25729886 & 0.29020050 
+\end{bmatrix}	
+\end{equation}
+
+εφόσον οι τιμές είναι πολύ κοντά θεωρώ ότι ο αλγόριθμος δίνει σωστά αποτελέσματα ειδικά αν συνυπολιγίσει κανείς το πλήθος των κόμβων αυτές οι διαφορές είναι μάλλον ανούσιες. 
+
+\subsection{Παρουσίαση Αλγορίθμου} 
+
+Ο αλγόριθμος παίρνει σαν όρισμα το όνομα του αρχείου τον αριθμό των κόμβων το d που γενικά είναι ίσο με 0.85 καθώς και tolerance δηλαδή την ελάχιστη επιτρεπτή διαφορά στο διάνυσμα pagerank μεταξύ δύο διαδοχικών επαναλήψεων του αλγορίμθου.
+Αρχικά διαβάζεται το αρχείο και δημιουργείται ο πίνακας Α οπου a[i][j] σημαίνει ότι υπάρχει link από τον κόμβο i στον κόμβο j. Έπειτα με την βοήθεια συναρτήσεων αρχικοποιείται το P όπου κάθε στοιχείο παίρνει την τιμή 1/n οπού n o αριθμός των κόμβων. 
+Μετά μετρώνται πόσα link ξεκινάν από τον κάθε κόμβο με την συνάρτηση count\_outlinks. Ύστερα ό Α στοχαστικοποίειται μέσω της συνάρτησης stochastifyΜatrix και τέλος η συνάρτηση createMΜatrix χειρίζεται την περίπτωση των dangling nodes. Έπειτα ξεκινάει ο αλγόριθμος Pagerank αφου αρχικοποιηθεί το διάνυσμα P\_new όπου θα αποθηκεύονται οι νέες τιμές που προκύπτουν από το γινόμενο Α*P. Φυσικά σύμφωνα με το Gauss Siedel όταν υπολογίζεται ένα στοιχείο P\_new[i] χρησιμοποιείται στον υπολογισμό των υπολοίπων στοιχείων και αυτό όντως κάνει την υλοποίση να συγκλίνει γρηγορότερα. Προφανώς μόλις πιάσουμε το tolerance ο αλγόριθμος σταματάει. 
+Επειδή η υλοποίηση δεν απορρίπτει τα μηδενικά (και εφόσον έχω δώσει 40GB στο σύστημά μου) τρέχει δίκτυα μέχρι το πολύ 10k κόμβους. Ως εκ τούτου χρησιμοποιήθηκαν 2 δίκτυα το Wiki-Vote με 8794 κόμβους και το  P2P-Gnutella με 8114.
+
+
+\subsection{Παρουσίαση αποτελεσμάτων}
+
+Παρακάτω παρουσιάζονται διάφορα αποτελέσματα εκτέλεσης του αλγορίθμου. στο κουτάκια με την slash (/) ο ακέραιος αριθμός είναι ο αριθμός των επαναλήψεων ώς την σύγκλιση και ο δεκαδικός είναι ο χρόνος εκτέλεσης σε δευτερόλεπτα (s).
+ 
+\begin{center}
+\begin{tabular}{ |c|c|c|c| } 
+ \hline
+ \backslashbox[0.1em]{Error}{Wiki-Vote}  & Gs\_serial & GS\_Parallel  & PowerMeth\_Par\\ \hhline{-||---}
+$10^{-4}$  &\slashbox[0.1em]{17}{7.6000} & \slashbox[0.1em]{14}{3.8516} & \slashbox[0.1em]{26}{5.8100}\\ \hhline{-||---}
+$10^{-8}$ &\slashbox[0.1em]{34}{14.6800} & \slashbox[0.1em]{32}{8.6800} & \slashbox[0.1em]{55}{12.1700}\\  \hhline{-||---}
+ \backslashbox[0.1em]{Error}{P2P-Nutella}\\ \hhline{-||---}
+$10^{-4}$  &\slashbox[0.1em]{9}{3.4300} & \slashbox[0.1em]{8}{1.8566} & \slashbox[0.1em]{14}{2.6500}\\  \hhline{-||---}
+$10^{-8}$ &\slashbox[0.1em]{16}{6.1300} & \slashbox[0.1em]{16}{3.7500} & \slashbox[0.1em]{32}{8.6800}\\  \hhline{-||---}
+ \hline
+\end{tabular}
+\end{center}
+
+Παρατηρούμε πως όσο το tolerance μειώνεται τόσο αυξάνει ο αριθμός των επαναλήψεων ως την σύγκλιση αλλά και ο συνολικός χρόνος. Επίσης παρατηρούμε πως η μέθοδος gauss Siedel όντως συγκλίνει και πιο  γρήγορα αλλά και σε λιγότερο αριθμό επαναλήψεων. Γενικά στην περίπτωση αυτή όντως η παραλληλοποίση βελτίωσε τον χρόνο εκτέλεσης αισθητά.
+
+\section{Implementation\_2}
+
+Σε σύγκριση με το παραπάνω paper το διάνυσμα που προκύπτει από αυτόν τον αλγόριθμο είναι το παρακάτω: 
+
+\begin{equation}	
+P_{mine} = \begin{bmatrix}
+0.1691332012414932 & 0.3488371968269348 & 0.2410147935152054 & 0.2410147935152054 
+\end{bmatrix}	
+\end{equation}
+
+και πάλι είναι αρκετά κοντά με το αρχικό οπότε είμαστε ικανοποιημένοι.
+\subsection{Παρουσίαση Αλγορίθμου}
+Σε αυτή την υλοποίηση αποθηκεύσαμε το δίκτυο ώς compact sparse matrix με αποτέλεσμα να μπορούμε να τρέχουμε δίκτυα μέχρι και 800k κόμβους. Αρχικά ο πίνακας val έχει παντού τίμη 1 και έπειτα παίρνει την τιμή 1/outlinks[i] ανάλογα με το πόσα link φεύγουν από τον κάθε κόμβο. Το col ind διάνυσμα μας δείχνει προς τα που δείχνει ο κάθε κόμβος και το row\_ptr μας δείνχει που τελειώνει ο ένας κόμβος και αρχίζουν τα outlinks του επόμενου. Έπειτα εκτελούμε τον αλγόριθμο ανάλογα με το και πάλι αν κάποιο p\_new[i] στοχείο έχει υπολογιστει το χρησιμοποιούμε στον υπολογισμό των υπολοίπων σύμφωνα με την μέθοδο Gauss-Siedel. 
+
+
+\subsection{Παρουσίαση αποτελεσμάτων}
+
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c| } 
+ \hline
+ \backslashbox[0.1em]{Error}{dataset}  & Nodre-dam & Google  & BerkStan & Stanford \\ \hhline{-||----}
+$10^{-6}$  &\slashbox[0.1em]{6}{0.09} & \slashbox[0.1em]{3}{0.04} & \slashbox[0.1em]{4}{0.187} & \slashbox[0.1em]{3}{0.038}\\   \hhline{-||----}
+$10^{-11}$ &\slashbox[0.1em]{52}{0.71} & \slashbox[0.1em]{3}{0.04} & \slashbox[0.1em]{5}{1.95} & \slashbox[0.1em]{4}{0.477} \\ \hhline{-||----}
+ \hline
+\end{tabular}
+\end{center}
+
+Παρατηρούμε εδώ ότι οι χρόνοι είναι αρκετά μικροί. Πολύ πιθανό να βοηθάει το γεγόνος ότι αποθηκεύοντας τον πίνακα ως compact sparse να περιορίζει εκθετικά τον αριθμό των πράξεων με αποτέλεσμα να πέφτει δραματικά ο χρόνος. Παρόλα αυτά οποιαδήποτε προσπάθεια παραλληλοποίησης(πέρα από τα προφανή σημεία) του αλγορίθμου απέτυχε. Πιθανόν αυτό να συμβαίνει εξαιτίας του overhead μεταξύ των threads. 
+
+
+\section{Επιρροές}
+Η εργασία μου επιρρεάστηκε από τις δουλειές των παρακάτω ανθρώπων:\\
+Link:  \href{https://github.com/nazgob/PageRank}{Link\_1} 	\\
+Link:  \href{https://github.com/purtroppo/PageRank}{Link\_2} 	\\
+Link:  \href{https://github.com/nikos912000/parallel-pagerank}{Link\_3} 	\\
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

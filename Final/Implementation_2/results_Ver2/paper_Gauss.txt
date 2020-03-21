@@ -1,0 +1,13 @@
+
+Graph data:
+
+  Nodes: 4, Edges: 8 
+
+k is: 15
+ execution time = 0.008279
+
+Number of iteration to converge: 15 
+
+Final Pagerank values:
+
+[0.1691332012414932 , 0.3488371968269348 , 0.2410147935152054 , 0.2410147935152054 

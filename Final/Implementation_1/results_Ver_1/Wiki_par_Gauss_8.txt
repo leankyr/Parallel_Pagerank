@@ -1,0 +1,2 @@
+k is: 32
+ execution time = 8.683750

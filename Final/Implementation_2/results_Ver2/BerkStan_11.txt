@@ -1,0 +1,10 @@
+
+Graph data:
+
+  Nodes: 685230, Edges: 7600595 
+
+k is: 5
+ execution time = 1.912743
+
+Number of iteration to converge: 5 
+

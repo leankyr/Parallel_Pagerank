@@ -1,0 +1,2 @@
+k is: 9
+ execution time = 3.434191

@@ -1,0 +1,2 @@
+k is: 17
+ execution time = 7.604463

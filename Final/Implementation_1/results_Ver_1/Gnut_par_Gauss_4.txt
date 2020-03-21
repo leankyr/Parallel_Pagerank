@@ -1,0 +1,2 @@
+k is: 8
+ execution time = 1.856638

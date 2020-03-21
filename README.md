@@ -16,7 +16,7 @@ make
 Then add the datasets file to folder implemenation 1 or two and 
 
 ```
-.output name_of_dataset size_of_dataset d error
+./output name_of_dataset size_of_dataset d error
 ```
 For example 
 ```

@@ -27,5 +27,3 @@ d: typically 0.85
 Output is for example:
 k is: 26 # Number of iterations
 execution time = 5.807762 # execution time
-
-TO_DO: Find how to parse path in C
